@@ -1,102 +1,89 @@
-import React from 'react'
-import TestUtils from 'react-addons-test-utils'
-import { bindActionCreators } from 'redux'
-import { HomeView } from 'views/HomeView'
+import React from 'react';
+import TestUtils from 'react-addons-test-utils';
+import { bindActionCreators } from 'redux';
+import { HomeView } from 'views/HomeView';
 
 function shallowRender (component) {
-  const renderer = TestUtils.createRenderer()
+  const renderer = TestUtils.createRenderer();
 
-  renderer.render(component)
-  return renderer.getRenderOutput()
+  renderer.render(component);
+  return renderer.getRenderOutput();
 }
 
 function renderWithProps (props = {}) {
-  return TestUtils.renderIntoDocument(<HomeView {...props} />)
+  return TestUtils.renderIntoDocument(<HomeView {...props} />);
 }
 
 function shallowRenderWithProps (props = {}) {
-  return shallowRender(<HomeView {...props} />)
+  return shallowRender(<HomeView {...props} />);
 }
 
 describe('(View) Home', function () {
-  let _component, _rendered, _props, _spies
+  let component, rendered, props, spies;
 
   beforeEach(function () {
-    _spies = {}
-    _props = {
-      counter: 0,
+    spies = {};
+    props = {
+      sheets: [],
       ...bindActionCreators({
-        doubleAsync: (_spies.doubleAsync = sinon.spy()),
-        increment: (_spies.increment = sinon.spy())
-      }, _spies.dispatch = sinon.spy())
-    }
-
-    _component = shallowRenderWithProps(_props)
-    _rendered = renderWithProps(_props)
-  })
+        doubleAsync: (spies.doubleAsync = sinon.spy()),
+        sheetsAdd: (spies.sheetsAdd = sinon.spy())
+      }, spies.dispatch = sinon.spy())
+    };
+    component = shallowRenderWithProps(props);
+    rendered = renderWithProps(props);
+  });
 
   it('Should render as a <div>.', function () {
-    expect(_component.type).to.equal('div')
-  })
+    expect(component.type).to.equal('div');
+  });
 
   it('Should include an <h1> with welcome text.', function () {
-    const h1 = TestUtils.findRenderedDOMComponentWithTag(_rendered, 'h1')
+    const h1 = TestUtils.findRenderedDOMComponentWithTag(rendered, 'h1');
+    expect(h1).to.exist;
+    expect(h1.textContent).to.match(/Welcome to Expense Tracker/);
+  });
 
-    expect(h1).to.exist
-    expect(h1.textContent).to.match(/Welcome to the React Redux Starter Kit/)
-  })
-
-  it('Should render with an <h2> that includes Sample Counter text.', function () {
-    const h2 = TestUtils.findRenderedDOMComponentWithTag(_rendered, 'h2')
-
-    expect(h2).to.exist
-    expect(h2.textContent).to.match(/Sample Counter/)
-  })
-
-  it('Should render props.counter at the end of the sample counter <h2>.', function () {
-    const h2 = TestUtils.findRenderedDOMComponentWithTag(
-      renderWithProps({ ..._props, counter: 5 }), 'h2'
-    )
-
-    expect(h2).to.exist
-    expect(h2.textContent).to.match(/5$/)
-  })
-
-  describe('An increment button...', function () {
-    let _btn
-
-    beforeEach(() => {
-      _btn = TestUtils.scryRenderedDOMComponentsWithTag(_rendered, 'button')
-        .filter(a => /Increment/.test(a.textContent))[0]
-    })
-
-    it('should be rendered.', function () {
-      expect(_btn).to.exist
-    })
+  describe('Add new sheet component', function () {
+    it('Should render an input box with a button', function () {
+      const input = TestUtils.findRenderedDOMComponentWithClass(rendered, 'add-sheet-input');
+      expect(input).to.exist;
+      expect(input.placeholder).to.match(/Insert a new sheet name.../);
+    });
 
     it('should dispatch an action when clicked.', function () {
-      _spies.dispatch.should.have.not.been.called
-      TestUtils.Simulate.click(_btn)
-      _spies.dispatch.should.have.been.called
-    })
-  })
+      const input = TestUtils.findRenderedDOMComponentWithClass(rendered, 'add-sheet-input');
+      const btn = TestUtils.findRenderedDOMComponentWithClass(rendered, 'add-sheet-btn');
+      TestUtils.Simulate.change(input, { target: { value: 'foo' } });
+      TestUtils.Simulate.click(btn);
+      spies.dispatch.should.have.been.called;
+      spies.sheetsAdd.should.have.been.called;
+    });
+  });
 
-  describe('A Double (Async) button...', function () {
-    let _btn
+  describe('Expense sheets list', function () {
+    it('should be rendered', function () {
+      const renderedList = renderWithProps({
+        ...props,
+        sheets: [
+          {
+            id: 123,
+            title: 'foo'
+          },
+          {
+            id: 456,
+            title: 'bar'
+          }
+        ]
+      });
 
-    beforeEach(() => {
-      _btn = TestUtils.scryRenderedDOMComponentsWithTag(_rendered, 'button')
-        .filter(a => /Double/.test(a.textContent))[0]
-    })
+      const list = TestUtils.findRenderedDOMComponentWithClass(renderedList, 'sheets-list');
+      const items = TestUtils.scryRenderedDOMComponentsWithClass(renderedList, 'list-group-item');
 
-    it('should be rendered.', function () {
-      expect(_btn).to.exist
-    })
+      expect(list).to.exist;
+      expect(items.length).to.equal(2);
+      expect(items[0].textContent).to.equal('foo');
+    });
+  });
+});
 
-    it('should dispatch an action when clicked.', function () {
-      _spies.dispatch.should.have.not.been.called
-      TestUtils.Simulate.click(_btn)
-      _spies.dispatch.should.have.been.called
-    })
-  })
-})

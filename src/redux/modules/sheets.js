@@ -1,14 +1,20 @@
-import { createAction, handleActions } from 'redux-actions'
+import { createAction, handleActions } from 'redux-actions';
 
 // ------------------------------------
 // Constants
 // ------------------------------------
-export const COUNTER_INCREMENT = 'COUNTER_INCREMENT'
+export const SHEETS_ADD = 'SHEETS_ADD';
 
 // ------------------------------------
 // Actions
 // ------------------------------------
-export const increment = createAction(COUNTER_INCREMENT, (value = 1) => value)
+let index = 0;
+export const sheetsAdd = createAction(SHEETS_ADD, (title = '_DEFAULT_') => {
+  return {
+    id: ++index,
+    title: title
+  };
+});
 
 // This is a thunk, meaning it is a function that immediately
 // returns a function for lazy evaluation. It is incredibly useful for
@@ -19,19 +25,24 @@ export const increment = createAction(COUNTER_INCREMENT, (value = 1) => value)
 export const doubleAsync = () => {
   return (dispatch, getState) => {
     setTimeout(() => {
-      dispatch(increment(getState().counter))
-    }, 1000)
-  }
-}
+      dispatch(sheetsAdd(getState().counter));
+    }, 1000);
+  };
+};
 
 export const actions = {
-  increment,
+  sheetsAdd,
   doubleAsync
-}
+};
 
 // ------------------------------------
 // Reducer
 // ------------------------------------
 export default handleActions({
-  [COUNTER_INCREMENT]: (state, { payload }) => state + payload
-}, 1)
+  [SHEETS_ADD]: (state, { payload }) => {
+    return [
+      ...state,
+      payload
+    ];
+  }
+}, []);
