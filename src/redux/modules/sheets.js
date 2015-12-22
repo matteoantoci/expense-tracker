@@ -8,10 +8,8 @@ export const SHEETS_ADD = 'SHEETS_ADD';
 // ------------------------------------
 // Actions
 // ------------------------------------
-let index = 0;
 export const sheetsAdd = createAction(SHEETS_ADD, (title = '_DEFAULT_') => {
   return {
-    id: ++index,
     title: title
   };
 });
@@ -35,14 +33,20 @@ export const actions = {
   doubleAsync
 };
 
+const initialState = [];
+
 // ------------------------------------
 // Reducer
 // ------------------------------------
 export default handleActions({
-  [SHEETS_ADD]: (state, { payload }) => {
+  [SHEETS_ADD]: (state, action) => {
+    const newItem = {
+      id: state.reduce((maxId, sheet) => Math.max(sheet.id, maxId), 0) + 1,
+      title: action.payload.title
+    };
     return [
       ...state,
-      payload
+      newItem
     ];
   }
-}, []);
+}, initialState);
