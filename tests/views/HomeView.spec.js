@@ -45,6 +45,11 @@ describe('(View) Home', function () {
   });
 
   describe('Add new sheet component', function () {
+    let input;
+    beforeEach(function () {
+      input = TestUtils.findRenderedDOMComponentWithClass(rendered, 'add-sheet-input');
+    });
+
     it('Should render an input box with a button', function () {
       const input = TestUtils.findRenderedDOMComponentWithClass(rendered, 'add-sheet-input');
       expect(input).to.exist;
@@ -52,12 +57,11 @@ describe('(View) Home', function () {
     });
 
     it('should dispatch an action when clicked.', function () {
-      const input = TestUtils.findRenderedDOMComponentWithClass(rendered, 'add-sheet-input');
+      input.value = 'foo';
       const btn = TestUtils.findRenderedDOMComponentWithClass(rendered, 'add-sheet-btn');
-      TestUtils.Simulate.change(input, { target: { value: 'foo' } });
       TestUtils.Simulate.click(btn);
       spies.dispatch.should.have.been.called;
-      spies.sheetsAdd.should.have.been.called;
+      spies.sheetsAdd.should.have.been.calledWith('foo');
     });
   });
 
